@@ -45,3 +45,9 @@ jobs:
         DATABASE_URL: "mysql://user:pass@localhost:3306/db"
         STRIPE_SECRET_KEY: sk_test_placeholder
         STRIPE_WEBHOOK_SECRET: whsec_placeholder
+
+    - name: Install Frontend Dependencies
+      run: cd frontend && npm install
+
+    - name: Build Frontend
+      run: cd frontend && npm run build
