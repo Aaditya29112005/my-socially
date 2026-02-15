@@ -14,11 +14,15 @@ export class ImageService {
     }
 
     /**
-   * Generates and saves a personalized greeting banner
+   * Generates and saves a personalized greeting banner with optional filters
    * @param name User's name
+   * @param options Processing options (grayscale, blur, tint)
    * @returns Object containing the buffer and the saved file path
    */
-    static async generateGreetingBanner(name: string): Promise<{ buffer: Buffer; fileName: string }> {
+    static async generateGreetingBanner(
+        name: string,
+        options: { grayscale?: boolean; blur?: number; tint?: string } = {}
+    ): Promise<{ buffer: Buffer; fileName: string }> {
         try {
             const width = 1200;
             const height = 630;
@@ -32,7 +36,7 @@ export class ImageService {
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, width, height);
 
-            // 2. Add subtle pattern or glassmorphism effect
+            // 2. Add subtle pattern
             ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.beginPath();
             ctx.arc(width * 0.8, height * 0.2, 200, 0, Math.PI * 2);
@@ -61,9 +65,23 @@ export class ImageService {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.fillText('Your production-grade workspace is ready.', width / 2, height / 2 + 160);
 
-            // 5. Convert to WebP
+            // 5. Build Sharp Pipeline
             const buffer = canvas.toBuffer('image/png');
-            const webpBuffer = await sharp(buffer)
+            let pipeline = sharp(buffer);
+
+            if (options.grayscale) {
+                pipeline = pipeline.grayscale();
+            }
+
+            if (options.blur) {
+                pipeline = pipeline.blur(options.blur);
+            }
+
+            if (options.tint) {
+                pipeline = pipeline.tint(options.tint);
+            }
+
+            const webpBuffer = await pipeline
                 .webp({ quality: 80 })
                 .toBuffer();
 

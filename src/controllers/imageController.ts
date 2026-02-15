@@ -6,7 +6,7 @@ import Logger from '../utils/logger';
 export class ImageController {
     static async generateGreeting(req: Request, res: Response, next: NextFunction) {
         try {
-            const { name } = req.body;
+            const { name, grayscale, blur, tint } = req.body;
             const userId = req.user?.id;
 
             if (!name) {
@@ -23,8 +23,12 @@ export class ImageController {
                 });
             }
 
-            // Generate and save the image
-            const { buffer, fileName } = await ImageService.generateGreetingBanner(name);
+            // Generate and save the image with filters
+            const { buffer, fileName } = await ImageService.generateGreetingBanner(name, {
+                grayscale: !!grayscale,
+                blur: blur ? Number(blur) : undefined,
+                tint: tint as string
+            });
 
             // Relative URL for serving via express.static
             const imageUrl = `/public/uploads/${fileName}`;
@@ -37,6 +41,7 @@ export class ImageController {
                     userId: userId,
                     metadata: {
                         name: name,
+                        filters: { grayscale, blur, tint },
                         generatedAt: new Date().toISOString()
                     }
                 },

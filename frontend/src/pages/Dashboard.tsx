@@ -39,11 +39,20 @@ const Dashboard: React.FC<DashboardProps> = ({ setIsAuthenticated }) => {
         navigate('/login');
     };
 
+    const [filters, setFilters] = useState({
+        grayscale: false,
+        blur: 0,
+        tint: ''
+    });
+
     const generateBanner = async () => {
         setLoading(true);
         try {
             const res = await apiClient.post('/images/generate-greeting',
-                { name: user.name || 'Architect' },
+                {
+                    name: user.name || 'Architect',
+                    ...filters
+                },
                 { responseType: 'blob' }
             );
 
@@ -94,18 +103,56 @@ const Dashboard: React.FC<DashboardProps> = ({ setIsAuthenticated }) => {
                         >
                             <div className="flex items-center gap-3">
                                 <Sparkles className="text-purple-400" />
-                                <h2 className="text-xl">Creative Engine</h2>
+                                <h2 className="text-xl">Filter Studio</h2>
                             </div>
-                            <p className="text-muted text-sm">
-                                Generate dynamic, production-ready banners.
-                            </p>
+
+                            <div className="space-y-4">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        checked={filters.grayscale}
+                                        onChange={(e) => setFilters(f => ({ ...f, grayscale: e.target.checked }))}
+                                        className="w-5 h-5 rounded border-white/10 bg-white/5 text-purple-500 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm text-muted group-hover:text-white transition-colors">Grayscale Magic</span>
+                                </label>
+
+                                <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                        <span className="text-xs text-muted">Gaussian Blur</span>
+                                        <span className="text-xs text-purple-400 font-mono">{filters.blur}px</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0" max="20"
+                                        value={filters.blur}
+                                        onChange={(e) => setFilters(f => ({ ...f, blur: parseInt(e.target.value) }))}
+                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-xs text-muted">Atmospheric Tint</span>
+                                    <div className="flex gap-2">
+                                        {['', '#ff0000', '#00ff00', '#0000ff', '#ff00ff'].map(color => (
+                                            <button
+                                                key={color}
+                                                onClick={() => setFilters(f => ({ ...f, tint: color }))}
+                                                className={`w-8 h-8 rounded-full border-2 transition-all ${filters.tint === color ? 'border-purple-500 scale-110 shadow-lg' : 'border-white/10 hover:border-white/30'}`}
+                                                style={{ backgroundColor: color || 'transparent', backgroundImage: !color ? 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)' : '', backgroundSize: '10px 10px', backgroundPosition: '0 0, 5px 5px' }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
                             <button
                                 onClick={generateBanner}
                                 disabled={loading}
                                 className="btn-primary w-full flex-center gap-2"
                             >
                                 <ImageIcon size={20} />
-                                {loading ? 'Processing...' : 'Generate Personalized Banner'}
+                                {loading ? 'Processing...' : 'Generate with Filters'}
                             </button>
                         </motion.div>
 
