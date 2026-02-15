@@ -7,6 +7,7 @@ import Logger from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
 import imageRoutes from './routes/imageRoutes';
+import paymentRoutes from './routes/paymentRoutes';
 import { protect } from './middleware/authMiddleware';
 
 // Configuration
@@ -31,6 +32,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health Check Route
 app.get('/health', (req: Request, res: Response) => {
