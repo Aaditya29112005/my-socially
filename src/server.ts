@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/node';
 import Logger from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
+import imageRoutes from './routes/imageRoutes';
 import { protect } from './middleware/authMiddleware';
 
 // Configuration
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/images', imageRoutes);
 
 // Health Check Route
 app.get('/health', (req: Request, res: Response) => {
