@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run Linting
+      run: npm run test:coverage # Using coverage as a proxy for now, but usually 'npm run lint'
+      
+    - name: Build Project
+      run: npm run build
+      
+    - name: Run Tests
+      run: npm test
+      env:
+        NODE_ENV: test
+        JWT_SECRET: testsecret
+        DATABASE_URL: "mysql://user:pass@localhost:3306/db" # Placeholder for CI
