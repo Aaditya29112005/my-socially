@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import * as Sentry from '@sentry/node';
 import Logger from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
+import authRoutes from './routes/authRoutes';
+import { protect } from './middleware/authMiddleware';
 
 // Configuration
 dotenv.config();
@@ -25,12 +27,24 @@ app.use((req, res, next) => {
     next();
 });
 
+// Routes
+app.use('/api/auth', authRoutes);
+
 // Health Check Route
 app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
         status: 'success',
         message: 'Server is healthy',
         timestamp: new Date().toISOString(),
+    });
+});
+
+// Protected Example Route
+app.get('/api/protected', protect, (req: Request, res: Response) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'You have accessed a protected route',
+        user: req.user,
     });
 });
 
