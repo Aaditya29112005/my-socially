@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LogOut, Image as ImageIcon, CreditCard, Sparkles, User, Download } from 'lucide-react';
 import apiClient from '../api/client';
@@ -12,7 +12,25 @@ const Dashboard: React.FC<DashboardProps> = ({ setIsAuthenticated }) => {
     const [user] = useState<any>(JSON.parse(localStorage.getItem('user') || '{}'));
     const [bannerPreview, setBannerPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [history, setHistory] = useState<any[]>([]);
     const navigate = useNavigate();
+
+    const BASE_URL = 'http://localhost:5000';
+
+    useEffect(() => {
+        fetchHistory();
+    }, []);
+
+    const fetchHistory = async () => {
+        try {
+            const res = await apiClient.get('/images');
+            if (res.data.status === 'success') {
+                setHistory(res.data.data.images);
+            }
+        } catch (err) {
+            console.error('Failed to fetch history', err);
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -24,7 +42,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setIsAuthenticated }) => {
     const generateBanner = async () => {
         setLoading(true);
         try {
-            // Requesting the Sharp-powered backend to generate a personalized banner
             const res = await apiClient.post('/images/generate-greeting',
                 { name: user.name || 'Architect' },
                 { responseType: 'blob' }
@@ -32,6 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setIsAuthenticated }) => {
 
             const url = URL.createObjectURL(res.data);
             setBannerPreview(url);
+            fetchHistory(); // Refresh gallery after new generation
         } catch (err) {
             console.error('Generation failed', err);
         } finally {
@@ -65,90 +83,115 @@ const Dashboard: React.FC<DashboardProps> = ({ setIsAuthenticated }) => {
                 </div>
             </nav>
 
-            <main className="container grid grid-cols-12 gap-8">
-                {/* Left Column: Generation Controls */}
-                <div className="col-span-12 lg:col-span-5 space-y-8">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="glass p-8 space-y-6"
-                    >
-                        <div className="flex items-center gap-3">
-                            <Sparkles className="text-purple-400" />
-                            <h2 className="text-xl">Creative Engine</h2>
-                        </div>
-                        <p className="text-muted text-sm">
-                            Generate a high-performance, personalized greeting banner optimized for production.
-                        </p>
-                        <button
-                            onClick={generateBanner}
-                            disabled={loading}
-                            className="btn-primary w-full flex-center gap-2"
+            <main className="container space-y-12">
+                <div className="grid grid-cols-12 gap-8">
+                    {/* Left Column: Generation Controls */}
+                    <div className="col-span-12 lg:col-span-5 space-y-8">
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="glass p-8 space-y-6"
                         >
-                            <ImageIcon size={20} />
-                            {loading ? 'Generating brilliance...' : 'Generate Personalized Banner'}
-                        </button>
-                    </motion.div>
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="text-purple-400" />
+                                <h2 className="text-xl">Creative Engine</h2>
+                            </div>
+                            <p className="text-muted text-sm">
+                                Generate dynamic, production-ready banners.
+                            </p>
+                            <button
+                                onClick={generateBanner}
+                                disabled={loading}
+                                className="btn-primary w-full flex-center gap-2"
+                            >
+                                <ImageIcon size={20} />
+                                {loading ? 'Processing...' : 'Generate Personalized Banner'}
+                            </button>
+                        </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="glass p-8 space-y-6 border-amber-500/20"
-                    >
-                        <div className="flex items-center gap-3">
-                            <CreditCard className="text-amber-400" />
-                            <h2 className="text-xl">Premium Credits</h2>
-                        </div>
-                        <p className="text-muted text-sm">
-                            You're currently on the free tier. Upgrade for unlimited high-res exports and custom filters.
-                        </p>
-                        <button
-                            onClick={handleCheckout}
-                            className="w-full py-3 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-lg hover:bg-amber-500 hover:text-white transition-all font-semibold"
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="glass p-8 space-y-6"
                         >
-                            Upgrade to Premium for $10
-                        </button>
-                    </motion.div>
+                            <div className="flex items-center gap-3">
+                                <CreditCard className="text-amber-400" />
+                                <h2 className="text-xl">Premium Status</h2>
+                            </div>
+                            <p className="text-muted text-sm">
+                                Unlock advanced features and infinite exports.
+                            </p>
+                            <button
+                                onClick={handleCheckout}
+                                className="w-full py-3 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-lg hover:bg-amber-500 hover:text-white transition-all font-semibold"
+                            >
+                                Upgrade Now
+                            </button>
+                        </motion.div>
+                    </div>
+
+                    {/* Right Column: Active Preview */}
+                    <div className="col-span-12 lg:col-span-7">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="glass min-h-[400px] flex-center overflow-hidden relative"
+                        >
+                            {!bannerPreview ? (
+                                <div className="text-center p-12 space-y-4">
+                                    <div className="w-20 h-20 bg-white/5 rounded-full flex-center mx-auto">
+                                        <ImageIcon className="text-muted" size={32} />
+                                    </div>
+                                    <h3 className="text-muted">Awake the Creator</h3>
+                                    <p className="text-muted text-xs">Run the engine to see the magic.</p>
+                                </div>
+                            ) : (
+                                <div className="w-full p-6 animate-float">
+                                    <img src={bannerPreview} alt="Preview" className="w-full rounded-xl shadow-2xl border border-white/10" />
+                                    <div className="mt-4 flex justify-end">
+                                        <a href={bannerPreview} download="creative.webp" className="text-purple-400 text-sm flex items-center gap-1">
+                                            <Download size={14} /> Save WebP
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    </div>
                 </div>
 
-                {/* Right Column: Preview & Results */}
-                <div className="col-span-12 lg:col-span-7">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="glass min-h-[400px] flex-center overflow-hidden relative"
-                    >
-                        {!bannerPreview ? (
-                            <div className="text-center p-12 space-y-4">
-                                <div className="w-20 h-20 bg-white/5 rounded-full flex-center mx-auto">
-                                    <ImageIcon className="text-muted" size={32} />
+                {/* Gallery Section */}
+                <section className="space-y-6">
+                    <div className="flex items-center gap-3 px-2">
+                        <ImageIcon className="text-purple-400" />
+                        <h2 className="text-2xl font-bold">Creative Gallery</h2>
+                    </div>
+
+                    <div className="gallery-grid">
+                        {history.map((img, idx) => (
+                            <motion.div
+                                key={img.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="glass tilt-card p-3 group overflow-hidden cursor-pointer"
+                            >
+                                <div className="relative aspect-video rounded-lg overflow-hidden mb-3">
+                                    <img src={`${BASE_URL}${img.url}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Generated" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex-center">
+                                        <a href={`${BASE_URL}${img.url}`} download className="p-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                                            <Download size={18} />
+                                        </a>
+                                    </div>
                                 </div>
-                                <h3 className="text-muted font-medium">No Preview Yet</h3>
-                                <p className="text-muted text-sm max-w-xs mx-auto">
-                                    Your dynamic creation will appear here once generated.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="w-full p-6 animate-float">
-                                <img
-                                    src={bannerPreview}
-                                    alt="Personalized Banner"
-                                    className="w-full rounded-xl shadow-2xl border border-white/10"
-                                />
-                                <div className="mt-6 flex justify-end gap-3">
-                                    <a
-                                        href={bannerPreview}
-                                        download="banner.webp"
-                                        className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
-                                    >
-                                        <Download size={16} /> Download WebP
-                                    </a>
+                                <div className="px-2">
+                                    <p className="text-xs text-muted mb-1">{new Date(img.createdAt).toLocaleDateString()}</p>
+                                    <p className="text-sm font-medium truncate">{img.prompt}</p>
                                 </div>
-                            </div>
-                        )}
-                    </motion.div>
-                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
             </main>
         </div>
     );

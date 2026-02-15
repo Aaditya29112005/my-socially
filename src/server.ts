@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import path from 'path';
 import helmet from 'helmet';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -25,6 +26,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
 // Request logging middleware
 app.use((req, res, next) => {

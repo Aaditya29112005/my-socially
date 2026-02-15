@@ -101,7 +101,22 @@ button:active {
   box-shadow: 0 0 30px hsla(var(--primary-glow));
 }
 
-/* Layout Utilities */
+/* 3D Tilt Effect Utility */
+.tilt-card {
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+}
+
+.tilt-card:hover {
+  transform: translateY(-5px) rotateX(4deg) rotateY(-4deg);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;

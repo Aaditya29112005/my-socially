@@ -8,5 +8,6 @@ const router = Router();
 router.use(protect);
 
 router.post('/generate-greeting', ImageController.generateGreeting);
+router.get('/', ImageController.getUserImages);
 
 export default router;

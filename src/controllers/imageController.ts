@@ -23,13 +23,11 @@ export class ImageController {
                 });
             }
 
-            // Generate the image buffer
-            const buffer = await ImageService.generateGreetingBanner(name);
+            // Generate and save the image
+            const { buffer, fileName } = await ImageService.generateGreetingBanner(name);
 
-            // In a real production app, we would upload this to S3.
-            // For this assignment, we'll simulate it by generating a placeholder URL
-            // and saving the context to the database as specified.
-            const imageUrl = `https://storage.my-socially.com/generated/${Date.now()}.webp`;
+            // Relative URL for serving via express.static
+            const imageUrl = `/public/uploads/${fileName}`;
 
             const imageRecord = await prisma.image.create({
                 data: {
@@ -44,12 +42,38 @@ export class ImageController {
                 },
             });
 
-            // We'll return the buffer directly for demonstration, 
-            // but also provide the DB record info.
+            // Send the image record info along with the buffer
             res.set('Content-Type', 'image/webp');
+            res.set('X-Image-Id', imageRecord.id);
             res.send(buffer);
 
-            Logger.info(`Successfully generated dynamic image for user ${userId}`);
+            Logger.info(`Successfully generated and persisted image for user ${userId}: ${fileName}`);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getUserImages(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user?.id;
+
+            if (!userId) {
+                return res.status(401).json({
+                    status: 'fail',
+                    message: 'User authentication required',
+                });
+            }
+
+            const images = await prisma.image.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+            });
+
+            res.status(200).json({
+                status: 'success',
+                results: images.length,
+                data: { images },
+            });
         } catch (error) {
             next(error);
         }

@@ -14,11 +14,11 @@ export class ImageService {
     }
 
     /**
-     * Generates a personalized greeting banner
-     * @param name User's name
-     * @returns Buffer of the generated image (WebP)
-     */
-    static async generateGreetingBanner(name: string): Promise<Buffer> {
+   * Generates and saves a personalized greeting banner
+   * @param name User's name
+   * @returns Object containing the buffer and the saved file path
+   */
+    static async generateGreetingBanner(name: string): Promise<{ buffer: Buffer; fileName: string }> {
         try {
             const width = 1200;
             const height = 630;
@@ -32,7 +32,7 @@ export class ImageService {
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, width, height);
 
-            // 2. Add subtle pattern or glassmorphism effect (simple version)
+            // 2. Add subtle pattern or glassmorphism effect
             ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.beginPath();
             ctx.arc(width * 0.8, height * 0.2, 200, 0, Math.PI * 2);
@@ -46,16 +46,14 @@ export class ImageService {
             ctx.font = 'bold 60px sans-serif';
             ctx.fillText('Welcome to My Socially,', width / 2, height / 2 - 40);
 
-            // Personalized Name (with auto-scaling font)
+            // Personalized Name
             let fontSize = 100;
             ctx.font = `bold ${fontSize}px sans-serif`;
-
             const maxWidth = width - 100;
             while (ctx.measureText(name).width > maxWidth && fontSize > 40) {
                 fontSize -= 5;
                 ctx.font = `bold ${fontSize}px sans-serif`;
             }
-
             ctx.fillText(name, width / 2, height / 2 + 80);
 
             // 4. Subtext
@@ -63,11 +61,23 @@ export class ImageService {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.fillText('Your production-grade workspace is ready.', width / 2, height / 2 + 160);
 
-            // 5. Convert to WebP using Sharp for optimization
+            // 5. Convert to WebP
             const buffer = canvas.toBuffer('image/png');
-            return await sharp(buffer)
+            const webpBuffer = await sharp(buffer)
                 .webp({ quality: 80 })
                 .toBuffer();
+
+            // 6. Persist to public/uploads
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
+            const filePath = path.join(process.cwd(), 'public', 'uploads', fileName);
+
+            if (!fs.existsSync(path.dirname(filePath))) {
+                fs.mkdirSync(path.dirname(filePath), { recursive: true });
+            }
+
+            fs.writeFileSync(filePath, webpBuffer);
+
+            return { buffer: webpBuffer, fileName };
 
         } catch (error) {
             Logger.error('Image Generation Service Error:', error);
