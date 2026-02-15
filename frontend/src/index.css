@@ -1,0 +1,115 @@
+:root {
+  /* HSL Color Palette - High-Fidelity Purples & Blues */
+  --bg-dark: 260 30% 5%;
+  --bg-card: 260 20% 10%;
+  --primary: 270 90% 65%;
+  --primary-glow: 270 90% 65% / 0.3;
+  --secondary: 200 100% 60%;
+  --accent: 320 100% 60%;
+  --text-main: 0 0% 100%;
+  --text-muted: 0 0% 70%;
+  --border: 0 0% 100% / 0.1;
+  --glass-bg: 0 0% 100% / 0.05;
+  --glass-blur: 16px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: hsl(var(--bg-dark));
+  color: hsl(var(--text-main));
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Utility */
+.glass {
+  background: hsla(var(--glass-bg));
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid hsla(var(--border));
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+button {
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.btn-primary {
+  background: hsl(var(--primary));
+  color: white;
+  padding: 12px 24px;
+  box-shadow: 0 0 20px hsla(var(--primary-glow));
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 30px hsla(var(--primary-glow));
+}
+
+/* Layout Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
